@@ -74,6 +74,42 @@ def rankbasedSelection(population, nSelect):
                         findParentLoop = False
                 lower = lower + ranksProportion[i]
     return parentsIndices
+   
+def binaryTournament(population, nSelect):
+    parentsIndices = []
+    pool = []
+    poolLoop = True
+    poolBest = 0
+    #players for pool1
+    for n in range (nSelect):
+        while (poolLoop):
+            for i in range (2):
+                randNo = randint(0, len(population)-1)
+                if(len(parentsIndices)==len(population)-1):
+                    poolLoop = False;
+                if ((randNo not in parentsIndices) and (len(parentsIndices)<len(population)+1)):
+                    if(len(pool)==1):
+                        if (pool[0] != randNo):
+                            pool.append(randNo)
+                            poolLoop = False
+                    if(len(pool)==0):
+                        pool.append(randNo)
+        #best from pool 1            
+        if (len(pool)==2):
+            # for parent select
+            if(population[pool[0]][4]>population[pool[1]][4]):
+                poolBest = pool[0];
+            if(population[pool[0]][4]<population[pool[1]][4]):
+                poolBest = pool[1];
+            parentsIndices.append(poolBest)
+                
+        if (len(parentsIndices)<nSelect):
+            poolLoop = True
+            pool = []
+            poolBest = 0
+    return(parentsIndices)
+    
+ 
 
 # crossover
 
@@ -222,8 +258,8 @@ def generate(source, n_shapes, min_points, max_points, internal_res):
         population.append([shapes, points, colors, image, score])
 
     #parentsIndex = fitnessProportionalSelection(population, 2)
-    parentsIndex = rankbasedSelection(population, 2)
-    #parentsIndex = binaryTournament(population, 2)
+    #parentsIndex = rankbasedSelection(population, 2)
+    parentsIndex = binaryTournament(population, 2)
     #parentsIndex = randomSelection(population, 2)
     #parentsIndex = truncation(population, 2)
     #children = crossOver(population, 2);
