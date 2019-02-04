@@ -8,7 +8,9 @@ from numpy.random import randint
 
 def resizer(original, internal_size):
     factor = max(original.size) / internal_size
-
+    '''
+    factor = height or width per unit specified resolution 
+    '''
     def reduce(image):
         '''Reduces source image to internal resolution'''
         reduced, w, h = image.copy(), original.size[0] / factor, original.size[1] / factor
@@ -26,7 +28,6 @@ def initialize(n_shapes, min_points, max_points, width, height):
     shapes = np.empty((n_shapes, max_points * 2), dtype=np.dtype('int'))
     shapes[:,0::2] = randint(0, width, size=(n_shapes, max_points))
     shapes[:,1::2] = randint(0, height, size=(n_shapes, max_points))
-
     points = np.full(n_shapes, min_points)
 
     colors = randint(0, 256, size=(n_shapes, 4), dtype=np.dtype('uint8'))
@@ -42,7 +43,6 @@ def draw_image(width, height, shapes, points, colors, antialiasing=False):
     for shape, point, color in zip(shapes, points, colors):
         drawer.polygon((shape[:point * 2] * scale).tolist(), tuple(color))
     if antialiasing: image.thumbnail((width, height))
-    
     return image
 
 def error_abs(a, b):
@@ -55,6 +55,7 @@ def error_percent(error, image):
 
 def generate(source, n_shapes, min_points, max_points, internal_res):
     '''Build image. Interrupt program to return current image'''
+    population = []
 
     def changes(shapes, points, colors):
         '''Selects a polygon and randomly executes a change over it'''
@@ -127,7 +128,7 @@ def generate(source, n_shapes, min_points, max_points, internal_res):
         new_shapes, new_points, new_colors = changes(shapes, points, colors)
         new_image = np.array(draw_image(width, height, new_shapes, new_points, new_colors))
         new_score = error_abs(internal, new_image)
-
+        #population.append(new_image)
         if new_score <= score:
             return new_shapes, new_points, new_colors, new_image, new_score
         return shapes, points, colors, image, score
@@ -138,12 +139,16 @@ def generate(source, n_shapes, min_points, max_points, internal_res):
 
     print('Generating {}x{} image with {}x{} internal resolution'.format(*original.size, width, height))
 
-    shapes, points, colors = initialize(n_shapes, min_points, max_points, width, height)
-
     boundaries = np.tile([width, height], max_points)
-
-    image = np.array(draw_image(width, height, shapes, points, colors))
-    score = error_abs(internal, image)
+    # statistics
+    nPopulation = 5
+    for i in range (nPopulation):
+        shapes, points, colors = initialize(n_shapes, min_points, max_points, width, height)
+        boundaries = np.tile([width, height], max_points)
+        image = np.array(draw_image(width, height, shapes, points, colors))
+        score = error_abs(internal, image)
+        population.append([shapes, points, colors, image, score])
+    print(len(population))
 
     print('{:>12}  {:>12}  {:>12}  {:>12}'.format('iteration', 'error %', 'error abs', 'avg vert'))
 
