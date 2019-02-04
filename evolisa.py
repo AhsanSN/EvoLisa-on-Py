@@ -1,11 +1,83 @@
 import numpy as np
-
-
 from PIL import Image as plImage
 from PIL import ImageDraw as plDraw
-
+from random import *
+import math
+import heapq #finding nth largest
 from numpy.random import randint
 
+# selection algorithms
+# chromosome = [shapes, points, colors, image, score]
+def fitnessProportionalSelection(population, nSelect):  
+    fitnessSum = 0
+    fitnessProportions = []
+    parentsIndices = []
+    appendValue = 0
+    for i in population:
+        fitnessSum = fitnessSum + i[4]
+    for i in population:
+        fitnessProportions.append(i[4]/fitnessSum)
+    #choosing parents
+    for n in range (nSelect):
+        findParentLoop = True
+        if(len(parentsIndices)==len(population)):
+            findParentLoop = False;
+        while(findParentLoop == True):
+            randNo = random()
+            lower = 0
+            for i in range (len(population)):
+                if ((randNo>lower) and (randNo<lower + fitnessProportions[i])):
+                    if(i not in parentsIndices):
+                        parentsIndices.append(i)
+                        findParentLoop = False
+                lower = lower + fitnessProportions[i]
+    print(parentsIndices)
+    return parentsIndices
+
+
+def nth_largest(n, iter):
+    return heapq.nlargest(n, iter)[-1]
+
+def rankbasedSelection(population, nSelect):
+    rankSum = 0
+    ranksProportion = []
+    parentsIndices = []
+    fitness = []
+    #creating array for storing ranks
+    ranks = []
+    for i in range (len(population)):
+        ranks.append(0)
+        fitness.append(population[i][4])
+    #finding ranks
+    for i in range (1,len(population)+1):
+        nthLargestElement = nth_largest(i, fitness)
+        for j in range (len(population)):
+            if (nthLargestElement == population[j][4]):
+                ranks[j] = i;
+    # rank sum for calculation proportions
+    for i in ranks:
+        rankSum = rankSum + i
+    for i in ranks:
+        ranksProportion.append(i/rankSum)
+    #choosing parents
+    for n in range (nSelect):
+        findParentLoop = True
+        if(len(parentsIndices)==len(fitness)):
+            findParentLoop = False;
+        while(findParentLoop == True):
+            randNo = random()
+            lower = 0
+            for i in range (len(fitness)):
+                if ((randNo>lower) and (randNo<lower + ranksProportion[i])):
+                    if(i not in parentsIndices):
+                        parentsIndices.append(i)
+                        findParentLoop = False
+                lower = lower + ranksProportion[i]
+    return parentsIndices
+
+# crossover
+
+#supporting functions
 def resizer(original, internal_size):
     factor = max(original.size) / internal_size
     '''
@@ -141,14 +213,20 @@ def generate(source, n_shapes, min_points, max_points, internal_res):
 
     boundaries = np.tile([width, height], max_points)
     # statistics
-    nPopulation = 5
+    nPopulation = 10
     for i in range (nPopulation):
         shapes, points, colors = initialize(n_shapes, min_points, max_points, width, height)
         boundaries = np.tile([width, height], max_points)
         image = np.array(draw_image(width, height, shapes, points, colors))
         score = error_abs(internal, image)
         population.append([shapes, points, colors, image, score])
-    print(len(population))
+
+    #parentsIndex = fitnessProportionalSelection(population, 2)
+    parentsIndex = rankbasedSelection(population, 2)
+    #parentsIndex = binaryTournament(population, 2)
+    #parentsIndex = randomSelection(population, 2)
+    #parentsIndex = truncation(population, 2)
+    #children = crossOver(population, 2);
 
     print('{:>12}  {:>12}  {:>12}  {:>12}'.format('iteration', 'error %', 'error abs', 'avg vert'))
 
