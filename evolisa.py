@@ -8,7 +8,7 @@ from numpy.random import randint
 
 # selection algorithms
 # chromosome = [shapes, points, colors, image, score]
-def fitnessProportionalSelection(population, nSelect):  
+def fitnessProportionalSelection(population, nSelect):
     fitnessSum = 0
     fitnessProportions = []
     parentsIndices = []
@@ -31,7 +31,6 @@ def fitnessProportionalSelection(population, nSelect):
                         parentsIndices.append(i)
                         findParentLoop = False
                 lower = lower + fitnessProportions[i]
-    print(parentsIndices)
     return parentsIndices
 
 
@@ -131,9 +130,71 @@ def truncation(population, nSelect):
                 break
     return selectedIndex
 
- 
+# crossover [shapes, points, colors, image, score]
+def crossOver(parentsIndex, population, n_shapes, width, height, internal):
+    startCopyIndex = randint(1, n_shapes-(5)) 
+    finishCopyIndex = randint(startCopyIndex, n_shapes-1)  
+    parent1 = population[parentsIndex[0]]
+    parent2 = population[parentsIndex[1]]
+    child1 = [[],[],[],[],[]]
+    child2 = [[],[],[],[],[]]
+    #generating template
+    for i in range (3):
+        for j in range(n_shapes):
+            child1[i].append(-222)
+            child2[i].append(-222)
+    #generating child
+    #print(startCopyIndex, finishCopyIndex)
+  
+    # child 1
+    child1[0][startCopyIndex:finishCopyIndex] = parent1[0][startCopyIndex:finishCopyIndex] #shape
+    child1[1][startCopyIndex:finishCopyIndex] = parent1[1][startCopyIndex:finishCopyIndex] #point
+    child1[2][startCopyIndex:finishCopyIndex] = parent1[2][startCopyIndex:finishCopyIndex] #color
+    isChildComplete = False;
+    childIndex = finishCopyIndex
+    ParentIndex = finishCopyIndex
+    #print("parent",parent1)
+    #print("child",child1)
+    
+    while(isChildComplete==False):
+        child1[0][childIndex] = parent2[0][ParentIndex]; #shape
+        child1[1][childIndex] = parent2[1][ParentIndex]; #point
+        child1[2][childIndex] = parent2[2][ParentIndex]; #color
+        childIndex+= 1
+        ParentIndex+= 1
+        if (ParentIndex==len(child1[1])):
+            ParentIndex = 0
+            childIndex = 0
+        if(childIndex == startCopyIndex):
+            isChildComplete = True
+    # child 2
+    #copying shape point and color
+    child2[0][startCopyIndex:finishCopyIndex] = parent2[0][startCopyIndex:finishCopyIndex]
+    child2[1][startCopyIndex:finishCopyIndex] = parent2[1][startCopyIndex:finishCopyIndex]
+    child2[2][startCopyIndex:finishCopyIndex] = parent2[2][startCopyIndex:finishCopyIndex]
+    isChildComplete = False;
+    childIndex = finishCopyIndex
+    ParentIndex = finishCopyIndex
+    while(isChildComplete==False):
+        child2[0][childIndex] = parent1[0][ParentIndex];
+        child2[1][childIndex] = parent1[1][ParentIndex];
+        child2[2][childIndex] = parent1[2][ParentIndex];
+        childIndex+= 1
+        ParentIndex+= 1
+        if (ParentIndex==len(child2[1])):
+            ParentIndex = 0
+            childIndex = 0
+        if(childIndex == startCopyIndex):
+            isChildComplete = True
 
-# crossover
+    '''
+    #[shapes, points, colors, image, score]
+    child1[3] = np.array(draw_image(width, height, child1[0], child1[1], child1[2]))
+    child1[4] = error_abs(internal, child1[3])
+    child2[3] = np.array(draw_image(width, height, child2[0], child2[1], child2[2]))
+    child2[4] = error_abs(internal, child2[3])
+    '''
+    return([child1, child2])
 
 #supporting functions
 def resizer(original, internal_size):
@@ -272,6 +333,7 @@ def generate(source, n_shapes, min_points, max_points, internal_res):
     boundaries = np.tile([width, height], max_points)
     # statistics
     nPopulation = 10
+    mutationRate = 0.3
     for i in range (nPopulation):
         shapes, points, colors = initialize(n_shapes, min_points, max_points, width, height)
         boundaries = np.tile([width, height], max_points)
@@ -279,13 +341,32 @@ def generate(source, n_shapes, min_points, max_points, internal_res):
         score = error_abs(internal, image)
         population.append([shapes, points, colors, image, score])
 
-    #parentsIndex = fitnessProportionalSelection(population, 2)
+    parentsIndex = fitnessProportionalSelection(population, 2)
     #parentsIndex = rankbasedSelection(population, 2)
     #parentsIndex = binaryTournament(population, 2)
     #parentsIndex = randomSelection(population, 2)
     #parentsIndex = truncation(population, 2)
 
-    #children = crossOver(population, 2);
+    #crossover
+    #print((population))
+    children = crossOver(parentsIndex, population, n_shapes, width, height, internal);
+    #mutation
+    for i in range (len(children)):
+        randNo = random()
+        if (randNo<mutationRate):
+            children[i][0], children[i][1], children[i][2] = changes(children[i][0], children[i][1], children[i][2])
+            children[i][3] = np.array(draw_image(width, height, children[i][0], children[i][1], children[i][2]))
+            children[i][4] = error_abs(internal, children[i][3])
+    #calculating scores
+    children[0][3] = np.array(draw_image(width, height, children[0][0], children[0][1], children[0][2]))
+    children[0][4] = error_abs(internal, children[0][3])
+    children[1][3] = np.array(draw_image(width, height, children[1][0], children[1][1], children[1][2]))
+    children[1][4] = error_abs(internal, children[1][3])
+    #adding children to population with all stats
+    population.append(children[0])
+    population.append(children[1])
+
+    
 
     print('{:>12}  {:>12}  {:>12}  {:>12}'.format('iteration', 'error %', 'error abs', 'avg vert'))
 
