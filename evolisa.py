@@ -108,7 +108,29 @@ def binaryTournament(population, nSelect):
             pool = []
             poolBest = 0
     return(parentsIndices)
-    
+
+def randomSelection(population, nSelect):
+    selectedIndex = []
+    for i in range (nSelect):
+        isChildComplete = False
+        while(isChildComplete==False):
+            randNo = randint(0, len(population)-1)
+            if (randNo) not in selectedIndex:
+                selectedIndex.append(randNo)
+                isChildComplete = True;
+    return selectedIndex
+
+def truncation(population, nSelect):
+    selectedIndex = []
+    #finding ranks
+    for i in range (1,nSelect+1):
+        nthLargestElement = nth_largest(i, fitness)
+        for j in range (len(fitness)):
+            if (nthLargestElement == population[j][4]):
+                selectedIndex.append(j)
+                break
+    return selectedIndex
+
  
 
 # crossover
@@ -259,9 +281,10 @@ def generate(source, n_shapes, min_points, max_points, internal_res):
 
     #parentsIndex = fitnessProportionalSelection(population, 2)
     #parentsIndex = rankbasedSelection(population, 2)
-    parentsIndex = binaryTournament(population, 2)
+    #parentsIndex = binaryTournament(population, 2)
     #parentsIndex = randomSelection(population, 2)
     #parentsIndex = truncation(population, 2)
+
     #children = crossOver(population, 2);
 
     print('{:>12}  {:>12}  {:>12}  {:>12}'.format('iteration', 'error %', 'error abs', 'avg vert'))
