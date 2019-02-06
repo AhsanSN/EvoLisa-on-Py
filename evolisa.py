@@ -122,6 +122,9 @@ def randomSelection(population, nSelect):
 def truncation(population, nSelect):
     selectedIndex = []
     #finding ranks
+    fitness = []
+    for i in range(len(population)):
+        fitness.append(population[i][4])
     for i in range (1,nSelect+1):
         nthLargestElement = nth_largest(i, fitness)
         for j in range (len(fitness)):
@@ -132,8 +135,8 @@ def truncation(population, nSelect):
 
 # crossover [shapes, points, colors, image, score]
 def crossOver(parentsIndex, population, n_shapes, width, height, internal):
-    startCopyIndex = randint(1, n_shapes-(5)) 
-    finishCopyIndex = randint(startCopyIndex, n_shapes-1)  
+    startCopyIndex = randint(10, 25) 
+    finishCopyIndex = randint(35, 40)  
     parent1 = population[parentsIndex[0]]
     parent2 = population[parentsIndex[1]]
     child1 = [[],[],[],[],[]]
@@ -169,6 +172,10 @@ def crossOver(parentsIndex, population, n_shapes, width, height, internal):
             isChildComplete = True
     # child 2
     #copying shape point and color
+    
+    startCopyIndex = randint(10, 25) 
+    finishCopyIndex = randint(35, 40)
+    
     child2[0][startCopyIndex:finishCopyIndex] = parent2[0][startCopyIndex:finishCopyIndex]
     child2[1][startCopyIndex:finishCopyIndex] = parent2[1][startCopyIndex:finishCopyIndex]
     child2[2][startCopyIndex:finishCopyIndex] = parent2[2][startCopyIndex:finishCopyIndex]
@@ -262,10 +269,10 @@ def generate(source, n_shapes, min_points, max_points, internal_res):
             '''Random change to one point in xy axis'''
             #print("-------------------------------------------------",(index))
             
+            
             shapes = shapes.copy()
             change, point = randint(-point_rng, point_rng+1, size=2), np.random.choice(max_points) * 2
-
-            shapes[index, point:point + 2] = np.clip(shapes[index, point:point + 2] + change, 0, [width, height])
+            shapes[index][point:point + 2] = np.clip(shapes[index][point:point + 2] + change, 0, [width, height])
             return shapes, points, colors
 
         def shape(shapes, points, colors, index):
@@ -333,54 +340,101 @@ def generate(source, n_shapes, min_points, max_points, internal_res):
     boundaries = np.tile([width, height], max_points)
     # statistics
     nPopulation = 10
-    mutationRate = 0.3
+    mutationRate = .5
+    nChildren = 2 #must be even
+    #generating random population
     for i in range (nPopulation):
         shapes, points, colors = initialize(n_shapes, min_points, max_points, width, height)
         boundaries = np.tile([width, height], max_points)
         image = np.array(draw_image(width, height, shapes, points, colors))
         score = error_abs(internal, image)
-        population.append([shapes, points, colors, image, score])
+        population.append([shapes, points, colors, image, (10000000000000/score)])
 
-    parentsIndex = fitnessProportionalSelection(population, 2)
-    #parentsIndex = rankbasedSelection(population, 2)
-    #parentsIndex = binaryTournament(population, 2)
-    #parentsIndex = randomSelection(population, 2)
-    #parentsIndex = truncation(population, 2)
-
-    #crossover
-    #print((population))
-    children = crossOver(parentsIndex, population, n_shapes, width, height, internal);
-    #mutation
-    for i in range (len(children)):
-        randNo = random()
-        if (randNo<mutationRate):
-            children[i][0], children[i][1], children[i][2] = changes(children[i][0], children[i][1], children[i][2])
-            children[i][3] = np.array(draw_image(width, height, children[i][0], children[i][1], children[i][2]))
-            children[i][4] = error_abs(internal, children[i][3])
-    #calculating scores
-    children[0][3] = np.array(draw_image(width, height, children[0][0], children[0][1], children[0][2]))
-    children[0][4] = error_abs(internal, children[0][3])
-    children[1][3] = np.array(draw_image(width, height, children[1][0], children[1][1], children[1][2]))
-    children[1][4] = error_abs(internal, children[1][3])
-    #adding children to population with all stats
-    population.append(children[0])
-    population.append(children[1])
-
-    
-
+    #showing initial population
+    '''
+    for i in range (nPopulation):
+        restore(np.array(population[i][0]), np.array(population[i][1]), np.array(population[i][2])).save('.\img\initPop_g'+str("")+'_s'+str(population[i][4])+'.png', 'PNG')
+    '''
     print('{:>12}  {:>12}  {:>12}  {:>12}'.format('iteration', 'error %', 'error abs', 'avg vert'))
 
     try:
         it = 0
         while True:
-            if not it % 10000: # prints info each 10k iterations
-                print('{:>12}  {:>11.4f}%  {:>12}  {:>12.2f}'.format(
-                    it, error_percent(score, internal), score, points.mean()))
-            shapes, points, colors, image, score = iterate(shapes, points, colors, image, score)
+            if((it>1000)and(it<1010)):
+                restore(np.array(population[bestIndex[0]][0]), np.array(population[bestIndex[0]][1]), np.array(population[bestIndex[0]][2])).save('.\img\pic_g'+str(it)+'_s'+str(population[bestIndex[0]][4])+'.png', 'PNG')
+
+            if((it>3000)and(it<3010)):
+                restore(np.array(population[bestIndex[0]][0]), np.array(population[bestIndex[0]][1]), np.array(population[bestIndex[0]][2])).save('.\img\pic_g'+str(it)+'_s'+str(population[bestIndex[0]][4])+'.png', 'PNG')
+
+            if((it>5000)and(it<5010)):
+                restore(np.array(population[bestIndex[0]][0]), np.array(population[bestIndex[0]][1]), np.array(population[bestIndex[0]][2])).save('.\img\pic_g'+str(it)+'_s'+str(population[bestIndex[0]][4])+'.png', 'PNG')
+
+            if((it>10000)and(it<10010)):
+                restore(np.array(population[bestIndex[0]][0]), np.array(population[bestIndex[0]][1]), np.array(population[bestIndex[0]][2])).save('.\img\pic_g'+str(it)+'_s'+str(population[bestIndex[0]][4])+'.png', 'PNG')
+               
+            if not it % 100: # prints info each 10k iterations
+                bestIndex = truncation(population, 1)
+                print("iteration:",it,"best score;",population[bestIndex[0]][4])
+            if not it % 2000: # prints info each 10k iterations
+                print("new best image saved")
+                restore(np.array(population[bestIndex[0]][0]), np.array(population[bestIndex[0]][1]), np.array(population[bestIndex[0]][2])).save('.\img\pic_g'+str(it)+'_s'+str(population[bestIndex[0]][4])+'.png', 'PNG')
+
             it += 1
+
+            #find best
+
+            #crossover
+            
+            for childGeneration in range (nChildren//2):
+                #select parents
+                #parentsIndex = fitnessProportionalSelection(population, 2)
+                parentsIndex = rankbasedSelection(population, 2)
+                #parentsIndex = binaryTournament(population, 2)
+                #parentsIndex = randomSelection(population, 2)
+                #parentsIndex = truncation(population, 2)
+
+            
+                children = crossOver(parentsIndex, population, n_shapes, width, height, internal);
+                #mutation
+                for i in range (len(children)):
+                    randNo = random()
+                    if (randNo<mutationRate):
+                        children[i][0], children[i][1], children[i][2] = changes(children[i][0], children[i][1], children[i][2])
+                        children[i][3] = np.array(draw_image(width, height, children[i][0], children[i][1], children[i][2]))
+                        children[i][4] = error_abs(internal, children[i][3])
+                #calculating scores
+                children[0][3] = np.array(draw_image(width, height, children[0][0], children[0][1], children[0][2]))
+                children[0][4] = (10000000000000/(error_abs(internal, (children[0][3]))))
+                children[1][3] = np.array(draw_image(width, height, children[1][0], children[1][1], children[1][2]))
+                children[1][4] = (10000000000000/(error_abs(internal, (children[1][3]))))
+                print("child scores", children[0][4], children[1][4])
+                #adding children to population with all stats
+                population.append(children[0])
+                population.append(children[1])
+            
+            #select new population
+            #populationIndices = fitnessProportionalSelection(population, nPopulation)
+            #populationIndices = rankbasedSelection(population, nPopulation)
+            #populationIndices = binaryTournament(population, nPopulation)
+            #populationIndices = randomSelection(population, nPopulation)
+            populationIndices = truncation(population, nPopulation)
+
+            #restore(np.array(population[bestIndex[0]][0]), np.array(population[bestIndex[0]][1]), np.array(population[bestIndex[0]][2])).save('.\img\evolisa_'+str(it)+'.png', 'PNG')
+
+            
+            tempPopulation = []
+            for i in (populationIndices):
+                tempPopulation.append(population[i])
+            population = tempPopulation
     except:
+        print("")
         print('Generation finished at {} iterations.'.format(it))
-        restore(shapes, points, colors).save('evolisa.png', 'PNG')
+        #[shapes, points, colors, image, score]
+        #print(len(population[0][0]), len(population[0][1]), len(population[0][2]))
+        #print("1111111111",shapes)
+        #print("1111111111",population[0][0])
+        #restore(shapes, points, colors).save('evolisa.png', 'PNG')
+        restore(np.array(population[bestIndex[0]][0]), np.array(population[bestIndex[0]][1]), np.array(population[bestIndex[0]][2])).save('.\img\pic_g'+str(it)+'_s'+str(population[bestIndex[0]][4])+'.png', 'PNG')
 
 if __name__ == '__main__':
     from sys import argv
@@ -392,7 +446,7 @@ if __name__ == '__main__':
         )
 
     try:
-        source= "monkey.jpg"
+        source= "person.jpg"
         n_shapes =50# int(argv[2])
         min_points, max_points =3,20# int(argv[3]), int(argv[4])
         internal_res =160# int(argv[5])
