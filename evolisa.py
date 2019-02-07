@@ -158,8 +158,9 @@ def crossOver(parentsIndex, population, n_shapes, width, height, internal):
     ParentIndex = finishCopyIndex
     #print("parent",parent1)
     #print("child",child1)
-    
+    i = 0
     while(isChildComplete==False):
+        if(i<startCopyIndex and i>finishCopyIndex)
         child1[0][childIndex] = parent2[0][ParentIndex]; #shape
         child1[1][childIndex] = parent2[1][ParentIndex]; #point
         child1[2][childIndex] = parent2[2][ParentIndex]; #color
@@ -352,17 +353,15 @@ def generate(source, n_shapes, min_points, max_points, internal_res):
         print(population[i][4])
 
     #showing initial population
-    
+    '''
     for i in range (nPopulation):
         restore(np.array(population[i][0]), np.array(population[i][1]), np.array(population[i][2])).save('.\img\initPop_g'+str("")+'_s'+str((population[i][4]))+'.png', 'PNG')
-    
+    '''
     print('{:>12}  {:>12}  {:>12}  {:>12}'.format('iteration', 'error %', 'error abs', 'avg vert'))
     bestPop = []
     try:
         it = 0
-        for k in range (80): #while (True):
-            if (k==15):
-                sad =asdasd
+        while (True):#for k in range (89090900): #
             '''
             if((it>1000)and(it<1010)):
                 restore(np.array(population[bestIndex[0]][0]), np.array(population[bestIndex[0]][1]), np.array(population[bestIndex[0]][2])).save('.\img\pic_g'+str(it)+'_s'+str(population[bestIndex[0]][4])+'.png', 'PNG')
@@ -425,6 +424,13 @@ def generate(source, n_shapes, min_points, max_points, internal_res):
                 #adding children to population with all stats
                 population.append(children[0])
                 population.append(children[1])
+                '''
+                if(np.array_equal(children[0][4],children[1][4]) and np.array_equal(children[0][3],children[1][3])):
+                    print("child1", children[0][3])
+                    print("")
+                    print("child2", children[1][3])
+                    print("disaster-------------------------------------")
+                '''
             
             #select new population
             #populationIndices = fitnessProportionalSelection(population, nPopulation)
@@ -450,8 +456,8 @@ def generate(source, n_shapes, min_points, max_points, internal_res):
                 print(population[i][4])
             print("population scores -----")
             '''
-    except:
-        print("")
+    except Exception  as  e:
+        print(e)
         print('Generation finished at {} iterations.'.format(it))
         #[shapes, points, colors, image, score]
         #print(len(population[0][0]), len(population[0][1]), len(population[0][2]))
