@@ -160,7 +160,6 @@ def crossOver(parentsIndex, population, n_shapes, width, height, internal):
     #print("child",child1)
     i = 0
     while(isChildComplete==False):
-        if(i<startCopyIndex and i>finishCopyIndex)
         child1[0][childIndex] = parent2[0][ParentIndex]; #shape
         child1[1][childIndex] = parent2[1][ParentIndex]; #point
         child1[2][childIndex] = parent2[2][ParentIndex]; #color
@@ -197,10 +196,12 @@ def crossOver(parentsIndex, population, n_shapes, width, height, internal):
 
     
     #[shapes, points, colors, image, score]
+    '''
     child1[3] = np.array(draw_image(width, height, child1[0], child1[1], child1[2]))
     child1[4] = error_abs(internal, child1[3])
     child2[3] = np.array(draw_image(width, height, child2[0], child2[1], child2[2]))
     child2[4] = error_abs(internal, child2[3])
+    '''
     
     return([child1, child2])
 
@@ -253,7 +254,6 @@ def error_percent(error, image):
 
 def generate(source, n_shapes, min_points, max_points, internal_res):
     '''Build image. Interrupt program to return current image'''
-    population = []
 
     def changes(shapes, points, colors):
         '''Selects a polygon and randomly executes a change over it'''
@@ -335,7 +335,7 @@ def generate(source, n_shapes, min_points, max_points, internal_res):
     internal, width, height = reduce(original)
 
     print('Generating {}x{} image with {}x{} internal resolution'.format(*original.size, width, height))
-
+    population = np.array([])
     # statistics
     nPopulation = 20
     mutationRate = .3
@@ -400,6 +400,14 @@ def generate(source, n_shapes, min_points, max_points, internal_res):
 
             
                 children = crossOver(parentsIndex, population, n_shapes, width, height, internal);
+            
+                #calculating scores
+                children[0][3] = np.array(draw_image(width, height, children[0][0], children[0][1], children[0][2]))
+                children[0][4] = (10000000000/(error_abs(internal, (children[0][3]))))
+                
+                children[1][3] = np.array(draw_image(width, height, children[1][0], children[1][1], children[1][2]))
+                children[1][4] = (10000000000/(error_abs(internal, (children[1][3]))))
+                
                 #mutation
                 '''
                 for i in range (len(children)):
@@ -424,20 +432,23 @@ def generate(source, n_shapes, min_points, max_points, internal_res):
                 #adding children to population with all stats
                 population.append(children[0])
                 population.append(children[1])
-                '''
+                
                 if(np.array_equal(children[0][4],children[1][4]) and np.array_equal(children[0][3],children[1][3])):
+                    '''
                     print("child1", children[0][3])
                     print("")
                     print("child2", children[1][3])
-                    print("disaster-------------------------------------")
-                '''
+                    '''
+                    1;
+                    #print("disaster-------------------------------------")
+                
             
             #select new population
             #populationIndices = fitnessProportionalSelection(population, nPopulation)
             #populationIndices = rankbasedSelection(population, nPopulation)
-            #populationIndices = binaryTournament(population, nPopulation)
+            populationIndices = binaryTournament(population, nPopulation)
             #populationIndices = randomSelection(population, nPopulation)
-            populationIndices = truncation(population, nPopulation)
+            #populationIndices = truncation(population, nPopulation)
 
             #restore(np.array(population[bestIndex[0]][0]), np.array(population[bestIndex[0]][1]), np.array(population[bestIndex[0]][2])).save('.\img\evolisa_'+str(it)+'.png', 'PNG')
 
