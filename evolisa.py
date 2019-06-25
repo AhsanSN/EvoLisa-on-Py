@@ -254,6 +254,7 @@ def error_percent(error, image):
 
 def generate(source, n_shapes, min_points, max_points, internal_res):
     '''Build image. Interrupt program to return current image'''
+    population = []
 
     def changes(shapes, points, colors):
         '''Selects a polygon and randomly executes a change over it'''
@@ -335,7 +336,7 @@ def generate(source, n_shapes, min_points, max_points, internal_res):
     internal, width, height = reduce(original)
 
     print('Generating {}x{} image with {}x{} internal resolution'.format(*original.size, width, height))
-    population = np.array([])
+
     # statistics
     nPopulation = 20
     mutationRate = .3
@@ -499,3 +500,7 @@ if __name__ == '__main__':
 
     generate(source, n_shapes, min_points, max_points, internal_res)
         
+
+'''
+Basic code taken from: https://github.com/RobertoIA/EvoLisa
+'''
